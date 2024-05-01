@@ -1,14 +1,14 @@
 from functools import wraps
 from typing import Callable, Union
 
-from rest_framework import status
-from django.http import JsonResponse
+from starlette import status
+from fastapi.responses import JSONResponse
 
-from time_management_bot.backend.utils.exceptions import NotFoundException, IncorrectDataException
+from backend.utils.exceptions import NotFoundException, IncorrectDataException
 
 
-def create_error_response(error: Union[Exception, str], status_code: int = status.HTTP_400_BAD_REQUEST) -> JsonResponse:
-    return JsonResponse({"error": str(error)}, status=status_code)
+def create_error_response(error: Union[Exception, str], status_code: int = status.HTTP_400_BAD_REQUEST) -> JSONResponse:
+    return JSONResponse({"error": str(error)}, status=status_code)
 
 
 def handle_domain_exceptions(func: Callable) -> Callable:

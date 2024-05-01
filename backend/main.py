@@ -3,7 +3,7 @@ import uvicorn
 from backend.core.config import settings
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.endpoints.routers import task_router
+from backend.endpoints.routers import task_router, category_router
 
 
 def setup_middleware(app: FastAPI) -> None:
@@ -18,6 +18,7 @@ def setup_middleware(app: FastAPI) -> None:
 
 def setup_routers(app: FastAPI) -> None:
     app.include_router(task_router)
+    app.include_router(category_router)
 
 
 def create_app() -> FastAPI:

@@ -9,9 +9,9 @@ from backend.models.models import Category
 from backend.core.postgres import DBWork
 from backend.schemas.category import CategoryModel
 
-from time_management_bot.backend.schemas.category import CategoryCreate
-from time_management_bot.backend.schemas.useful import Id
-from time_management_bot.backend.utils.decorators import handle_domain_exceptions
+from backend.schemas.category import CategoryCreate
+from backend.schemas.useful import Id
+from backend.utils.decorators import handle_domain_exceptions
 
 
 @category_router.get('/all', response_model=list[CategoryModel])

@@ -6,18 +6,18 @@ from sqlalchemy.orm import Mapped, mapped_column
 from backend.models.meta import Base, DEFAULT_SCHEMA
 
 
-class UUIDMixin(Base):
+class UUIDMixin:
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
 
 
-class User(UUIDMixin):
+class User(Base, UUIDMixin):
     __tablename__ = 'user'
 
     username: Mapped[str] = mapped_column(String, unique=True)
     code: Mapped[str] = mapped_column(String)
 
 
-class Task(UUIDMixin):
+class Task(Base, UUIDMixin):
     __tablename__ = 'task'
 
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey('user.id'), nullable=True)  # NOTE
@@ -26,14 +26,14 @@ class Task(UUIDMixin):
     name: Mapped[str] = mapped_column(String)
 
 
-class Category(UUIDMixin):
-    __table_name__ = 'category'
+class Category(Base, UUIDMixin):
+    __tablename__ = 'category'
 
     name: Mapped[str] = mapped_column(String)
 
 
-class TaskCategory(UUIDMixin):
+class TaskCategory(Base, UUIDMixin):
     __tablename__ = 'task_to_category'
 
-    category_id = mapped_column(Integer, ForeignKey('category.id', nullable=False))
-    task_id = mapped_column(Integer, ForeignKey('task.id', nullable=False))
+    category_id = mapped_column(Integer, ForeignKey('category.id'), nullable=False)
+    task_id = mapped_column(Integer, ForeignKey('task.id'), nullable=False)

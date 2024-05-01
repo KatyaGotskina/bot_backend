@@ -4,7 +4,7 @@ from sqlalchemy import select, delete
 from sqlalchemy.sql import and_
 from sqlalchemy.orm import selectinload
 
-from time_management_bot.backend.utils.exceptions import NotFoundException
+from backend.utils.exceptions import NotFoundException
 
 
 class DBWork:
@@ -18,11 +18,11 @@ class DBWork:
 
     async def get_obj(self, model, where: dict[str, Any] = None, field_for_load: str = None):
         query = select(model)
-        if attr_for_load:
-            query = query.options(selectinload(getattr(model, attr_for_load)))
+        if field_for_load:
+            query = query.options(selectinload(getattr(model, field_for_load)))
         if where:
             query = query.filter(and_(*await self.get_filter(model, where)))
-        return await self.session.scalars(query)
+        return (await self.session.scalars(query)).all()
 
     async def create_obj(self, model, data_for_create: dict[str, Any]):
         obj = model(**data_for_create)

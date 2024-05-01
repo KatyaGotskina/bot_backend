@@ -1,15 +1,17 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Union
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
-from time_management_bot.backend.schemas.useful import Id
+from backend.schemas.useful import Id
 
 
-class TaskModel(BaseModel):
+class TaskModel(BaseModel, Id):
+    model_config = ConfigDict(from_attributes=True)
+
     start: datetime
-    end: datetime
+    end: Union[datetime, None]
     name: str
 
 
@@ -18,7 +20,8 @@ class TaskNameUpdate(Id):
     forcibly: Optional[bool] = False
 
 
-class TaskCreate(TaskModel):
+class TaskCreate(BaseModel):
+    name: str
     forcibly: Optional[bool] = False
 
 
