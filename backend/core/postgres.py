@@ -14,7 +14,13 @@ class DBWork:
 
     @staticmethod
     async def get_filter(model, field_to_value: dict[str, Any]) -> list[bool]:
-        return [getattr(model, attr) == value for attr, value in field_to_value.items()]
+        filters = []
+        for column_name, column_value in field_to_value.items():
+            if isinstance(column_value, list):
+                filters.append(getattr(model, column_name).contains(column_value))
+            else:
+                filters.append(getattr(model, column_name) == column_value)
+        return filters
 
     async def get_obj(self, model, where: dict[str, Any] = None, field_for_load: str = None):
         query = select(model)

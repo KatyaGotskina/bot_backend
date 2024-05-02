@@ -29,7 +29,7 @@ async def get_tasks(
     if undone:
         filter_dict['end'] = None
     if category:
-        filter_dict['categories'] = category
+        filter_dict['categories'] = [category]
     tasks = await db_work.get_obj(model=Task, where=filter_dict, field_for_load='categories')
     return JSONResponse([TaskModel.model_validate(task).model_dump(mode='json') for task in tasks])
 
