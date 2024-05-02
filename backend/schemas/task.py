@@ -7,12 +7,13 @@ from pydantic import BaseModel, ConfigDict
 from backend.schemas.useful import Id
 
 
-class TaskModel(BaseModel, Id):
+class TaskModel(Id):
     model_config = ConfigDict(from_attributes=True)
 
     start: datetime
     end: Union[datetime, None]
     name: str
+    categories: list[str]
 
 
 class TaskNameUpdate(Id):

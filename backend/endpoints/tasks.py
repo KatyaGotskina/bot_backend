@@ -29,16 +29,8 @@ async def get_tasks(
     if undone:
         filter_dict['end'] = None
     if category:
-        pass
-        # filter_dict['field_for_load'] =
-    tasks = await db_work.get_obj(model=Task, where=filter_dict)
-    print()
-    print()
-    print()
-    for task in tasks:
-        print(task.start)
-
-
+        filter_dict['categories'] = category
+    tasks = await db_work.get_obj(model=Task, where=filter_dict, field_for_load='categories')
     return JSONResponse([TaskModel.model_validate(task).model_dump(mode='json') for task in tasks])
 
 
@@ -47,7 +39,6 @@ async def create_task(
     body: TaskCreate,
     db_work: DBWork = Depends(get_db_work),
 ) -> Response:
-    print((await db_work.get_obj(model=Task, where={'name': body.name})))
     if await db_work.get_obj(model=Task, where={'name': body.name}) and not body.forcibly:
         return Response(status_code=status.HTTP_409_CONFLICT)
     task = await db_work.create_obj(Task, {'name': body.name})
