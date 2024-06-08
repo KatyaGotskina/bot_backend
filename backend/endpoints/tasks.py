@@ -23,6 +23,8 @@ from backend.utils.decorators import handle_domain_exceptions
 async def get_tasks(
     undone: Optional[bool] = Query(default=False, description='поиск незавершенных дел'),
     category: Optional[UUID] = Query(default=None, description='поиск дел по категории'),
+    limit: Optional[int] = Query(default=5),
+    offset: Optional[int] = Query(default=0),
     db_work: DBWork = Depends(get_db_work)
 ) -> JSONResponse:
     filter_dict = {}
@@ -30,7 +32,14 @@ async def get_tasks(
         filter_dict['end'] = None
     if category:
         filter_dict['categories'] = [category]
-    tasks = await db_work.get_obj(model=Task, where=filter_dict, field_for_load='categories')
+    tasks = await db_work.get_obj(
+        model=Task,
+        where=filter_dict,
+        field_for_load='categories',
+        field_for_order='start',
+        limit=limit,
+        offset=offset
+    )
     return JSONResponse([TaskModel.model_validate(task).model_dump(mode='json') for task in tasks])
 
 
@@ -45,9 +54,9 @@ async def create_task(
     return JSONResponse({'id': task.id}, status_code=status.HTTP_201_CREATED)
 
 
-@task_router.delete('')
+@task_router.delete('/{task_id}')
 async def delete_task(
-    task_id: Id,
+    task_id: int,
     db_work: DBWork = Depends(get_db_work),
 ) -> Response:
     await db_work.delete_obj(Task, {'id': task_id})

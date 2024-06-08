@@ -1,6 +1,6 @@
 from typing import Any
 
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, desc
 from sqlalchemy.sql import and_
 from sqlalchemy.orm import selectinload
 
@@ -22,12 +22,22 @@ class DBWork:
                 filters.append(getattr(model, column_name) == column_value)
         return filters
 
-    async def get_obj(self, model, where: dict[str, Any] = None, field_for_load: str = None):
+    async def get_obj(
+            self,
+            model, where: dict[str, Any] = None,
+            field_for_load: str = None,
+            field_for_order: str = None,
+            limit: int = 10,
+            offset: int = 0,
+    ):
         query = select(model)
         if field_for_load:
             query = query.options(selectinload(getattr(model, field_for_load)))
         if where:
             query = query.filter(and_(*await self.get_filter(model, where)))
+        if field_for_order:
+            query = query.order_by(desc(getattr(model, field_for_order)))
+        query = query.limit(limit).offset(offset)
         return (await self.session.scalars(query)).all()
 
     async def create_obj(self, model, data_for_create: dict[str, Any]):
