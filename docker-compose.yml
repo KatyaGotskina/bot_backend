@@ -4,7 +4,7 @@ services:
   web:
     container_name: web
     build:
-      dockerfile: C:\Users\Пользователь\Downloads\Telegram Desktop\time_management_bot\time_management_bot\Dockerfile
+      dockerfile: ./Dockerfile
       context: .
     ports:
       - "8000:8000"

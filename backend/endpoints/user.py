@@ -5,7 +5,7 @@ from starlette.responses import Response
 from backend.core.postgres import DBWork
 from backend.core.postgres_engine import get_db_work
 from backend.endpoints.routers import user_router
-from backend.models.models import User
+from backend.models.user import User
 from backend.schemas.user import TimezoneOffset
 from backend.utils.decorators import handle_domain_exceptions
 

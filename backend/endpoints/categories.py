@@ -1,12 +1,12 @@
-from fastapi import Depends, Query
+from fastapi import Depends
 from fastapi.responses import ORJSONResponse
 from starlette import status
 from starlette.responses import Response
 
 from backend.endpoints.routers import category_router
 from backend.core.postgres_engine import get_db_work
-from backend.models.models import Category
 from backend.core.postgres import DBWork
+from backend.models.category import Category
 from backend.schemas.category import CategoryModel
 
 from backend.schemas.category import CategoryCreate

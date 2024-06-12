@@ -3,17 +3,18 @@ from typing import Optional
 from uuid import UUID
 
 from fastapi import Depends, Query, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import ORJSONResponse
 from starlette import status
 from starlette.responses import Response
 
 from backend.endpoints.routers import task_router
 from backend.core.postgres_engine import get_db_work
-from backend.models.models import Task, User
 from backend.core.postgres import DBWork
+from backend.models.task import Task
+from backend.models.task_category import TaskCategory
+from backend.models.user import User
 from backend.schemas.task import TaskCreate, TaskModel
 
-from backend.models.models import TaskCategory
 from backend.schemas.task import TaskNameUpdate, TaskToCategory
 from backend.schemas.useful import Id
 from backend.utils.decorators import handle_domain_exceptions
@@ -27,10 +28,10 @@ async def get_tasks(
     limit: Optional[int] = Query(default=5),
     offset: Optional[int] = Query(default=0),
     db_work: DBWork = Depends(get_db_work)
-) -> JSONResponse:
+) -> ORJSONResponse:
     user_id = int(request.headers.get('user_from_id'))
     if not await db_work.get_obj(model=User, where={'id': user_id}):
-        return JSONResponse([])
+        return ORJSONResponse([])
     filter_dict = {'user_id': user_id}
     if undone:
         filter_dict['end'] = None
@@ -44,7 +45,7 @@ async def get_tasks(
         limit=limit,
         offset=offset
     )
-    return JSONResponse([TaskModel.model_validate(task).model_dump(mode='json') for task in tasks])
+    return ORJSONResponse([TaskModel.model_validate(task).model_dump(mode='json') for task in tasks])
 
 
 @task_router.post('')
@@ -65,7 +66,7 @@ async def create_task(
         Task,
         {'name': body.name,  'user_id': user_id, 'start': datetime.datetime.now(tz=tz)}
     )
-    return JSONResponse({'id': task.id}, status_code=status.HTTP_201_CREATED)
+    return ORJSONResponse({'id': task.id}, status_code=status.HTTP_201_CREATED)
 
 
 @task_router.delete('/{task_id}')
