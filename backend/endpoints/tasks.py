@@ -1,15 +1,15 @@
-from datetime import datetime
+import datetime
 from typing import Optional
 from uuid import UUID
 
-from fastapi import Depends, Query
+from fastapi import Depends, Query, Request
 from fastapi.responses import JSONResponse
 from starlette import status
 from starlette.responses import Response
 
 from backend.endpoints.routers import task_router
-from backend.core.postgres_engine import get_session, get_db_work
-from backend.models.models import Task
+from backend.core.postgres_engine import get_db_work
+from backend.models.models import Task, User
 from backend.core.postgres import DBWork
 from backend.schemas.task import TaskCreate, TaskModel
 
@@ -21,13 +21,17 @@ from backend.utils.decorators import handle_domain_exceptions
 
 @task_router.get('/all', response_model=list[TaskModel])
 async def get_tasks(
+    request: Request,
     undone: Optional[bool] = Query(default=False, description='поиск незавершенных дел'),
     category: Optional[UUID] = Query(default=None, description='поиск дел по категории'),
     limit: Optional[int] = Query(default=5),
     offset: Optional[int] = Query(default=0),
     db_work: DBWork = Depends(get_db_work)
 ) -> JSONResponse:
-    filter_dict = {}
+    user_id = int(request.headers.get('user_from_id'))
+    if not await db_work.get_obj(model=User, where={'id': user_id}):
+        return JSONResponse([])
+    filter_dict = {'user_id': user_id}
     if undone:
         filter_dict['end'] = None
     if category:
@@ -45,20 +49,34 @@ async def get_tasks(
 
 @task_router.post('')
 async def create_task(
+    request: Request,
     body: TaskCreate,
     db_work: DBWork = Depends(get_db_work),
 ) -> Response:
+    user_id = int(request.headers.get('user_from_id'))
+    user = await db_work.get_obj(model=User, where={'id': user_id})
+    if not user:
+        await db_work.create_obj(User, data_for_create={'id': user_id})
+    user = user[0]
     if await db_work.get_obj(model=Task, where={'name': body.name}) and not body.forcibly:
         return Response(status_code=status.HTTP_409_CONFLICT)
-    task = await db_work.create_obj(Task, {'name': body.name})
+    tz = datetime.timezone(datetime.timedelta(hours=user.timezone_offset))
+    task = await db_work.create_obj(
+        Task,
+        {'name': body.name,  'user_id': user_id, 'start': datetime.datetime.now(tz=tz)}
+    )
     return JSONResponse({'id': task.id}, status_code=status.HTTP_201_CREATED)
 
 
 @task_router.delete('/{task_id}')
 async def delete_task(
+    request: Request,
     task_id: int,
     db_work: DBWork = Depends(get_db_work),
 ) -> Response:
+    task = await db_work.get_obj(Task, where={'id': task_id, 'user_id': int(request.headers.get('user_from_id'))})
+    if not task:
+        return Response(status_code=status.HTTP_404_NOT_FOUND)
     await db_work.delete_obj(Task, {'id': task_id})
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
@@ -78,10 +96,13 @@ async def change_task_name(
 @task_router.patch('/end')
 @handle_domain_exceptions
 async def change_task_end(
+    request: Request,
     body: Id,
     db_work: DBWork = Depends(get_db_work),
 ) -> Response:
-
+    task = await db_work.get_obj(Task, where={'id': body.id, 'user_id': int(request.headers.get('user_from_id'))})
+    if not task:
+        return Response(status_code=status.HTTP_404_NOT_FOUND)
     await db_work.update_obj(Task, where={'id': body.id, 'end': None}, for_set={'end': datetime.now()})
     return Response(status_code=status.HTTP_200_OK)
 

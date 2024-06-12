@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import List
 
 from sqlalchemy import Integer, String, ForeignKey, DateTime, func
@@ -7,23 +6,22 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from backend.models.meta import Base, DEFAULT_SCHEMA
 
 
-class UUIDMixin:
+class IdMixin:
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
 
 
-class User(Base, UUIDMixin):
+class User(Base, IdMixin):
     __tablename__ = 'user'
 
-    username: Mapped[str] = mapped_column(String, unique=True)
-    code: Mapped[str] = mapped_column(String)
+    timezone_offset: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
 
-class Task(Base, UUIDMixin):
+class Task(Base, IdMixin):
     __tablename__ = 'task'
 
-    user_id: Mapped[int] = mapped_column(Integer, ForeignKey('user.id'), nullable=True)  # NOTE
-    start: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=func.now())
-    end: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey('user.id'))
+    start: Mapped[DateTime] = mapped_column(DateTime(timezone=True), nullable=False)
+    end: Mapped[DateTime] = mapped_column(DateTime(timezone=True), nullable=True)
     name: Mapped[str] = mapped_column(String)
     categories: Mapped[List['Category']] = relationship(
         'Category',
@@ -32,7 +30,7 @@ class Task(Base, UUIDMixin):
     )
 
 
-class Category(Base, UUIDMixin):
+class Category(Base, IdMixin):
     __tablename__ = 'category'
 
     name: Mapped[str] = mapped_column(String)
@@ -43,7 +41,7 @@ class Category(Base, UUIDMixin):
     )
 
 
-class TaskCategory(Base, UUIDMixin):
+class TaskCategory(Base, IdMixin):
     __tablename__ = 'task_to_category'
 
     category_id = mapped_column(Integer, ForeignKey('category.id'), nullable=False)

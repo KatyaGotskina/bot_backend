@@ -1,9 +1,10 @@
 from fastapi import FastAPI
 import uvicorn
-from backend.core.config import settings
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.endpoints.routers import task_router, category_router
+from backend.core.middleware import AuthMiddleware
+from backend.endpoints.routers import task_router, category_router, user_router
+from backend.metrics import prometheus_metrics, metrics
 
 
 def setup_middleware(app: FastAPI) -> None:
@@ -14,11 +15,15 @@ def setup_middleware(app: FastAPI) -> None:
         allow_methods=['*'],
         allow_headers=['*'],
     )
+    app.add_middleware(AuthMiddleware)
+    app.middleware('http')(prometheus_metrics)
 
 
 def setup_routers(app: FastAPI) -> None:
     app.include_router(task_router)
     app.include_router(category_router)
+    app.include_router(user_router)
+    app.add_route('/metrics', metrics)
 
 
 def create_app() -> FastAPI:
