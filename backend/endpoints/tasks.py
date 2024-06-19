@@ -57,14 +57,26 @@ async def create_task(
     user_id = int(request.headers.get('user_from_id'))
     user = await db_work.get_obj(model=User, where={'id': user_id})
     if not user:
-        await db_work.create_obj(User, data_for_create={'id': user_id})
-    user = user[0]
+        user = await db_work.create_obj(User, data_for_create={'id': user_id})
+    else:
+        user = user[0]
+        if not user.chat_id:
+            await db_work.update_obj(
+                User,
+                where={'id': user_id},
+                for_set={'chat_id': int(request.headers.get('user_chat_id'))}
+            )
     if await db_work.get_obj(model=Task, where={'name': body.name}) and not body.forcibly:
         return Response(status_code=status.HTTP_409_CONFLICT)
     tz = datetime.timezone(datetime.timedelta(hours=user.timezone_offset))
     task = await db_work.create_obj(
         Task,
-        {'name': body.name,  'user_id': user_id, 'start': datetime.datetime.now(tz=tz)}
+        {
+            'name': body.name,
+            'user_id': user_id,
+            'start': datetime.datetime.now(tz=tz),
+            'timezone_offset': user.timezone_offset
+        }
     )
     return ORJSONResponse({'id': task.id}, status_code=status.HTTP_201_CREATED)
 

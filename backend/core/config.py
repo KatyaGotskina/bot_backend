@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     BIND_PORT: int
     DB_URL: str
     JWT_SECRET_SALT: str
+    AUTH_KEY: str
 
     REDIS_HOST: str
     REDIS_PORT: int

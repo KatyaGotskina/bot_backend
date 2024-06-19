@@ -4,10 +4,13 @@ from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.responses import Response
 
+from backend.core.config import settings
+
 
 class AuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
-        if not request.headers.get('user_from_id') and str(request.url).split('/')[-1] not in ['openapi.json ', 'swagger', 'metrics']:
+        auth_key = request.headers.get('auth_key')
+        if isinstance(auth_key, str) and auth_key != settings.AUTH_KEY and str(request.url).split('/')[-1] not in ['openapi.json ', 'swagger', 'metrics']:
             return JSONResponse(content={'err': "No auth header"}, status_code=status.HTTP_401_UNAUTHORIZED)
         response = await call_next(request)
         return response

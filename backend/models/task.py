@@ -16,6 +16,7 @@ class Task(Base):
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey('user.id'))
     start: Mapped[DateTime] = mapped_column(DateTime(timezone=True), nullable=False)
     end: Mapped[DateTime] = mapped_column(DateTime(timezone=True), nullable=True)
+    timezone_offset: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     name: Mapped[str] = mapped_column(String)
     categories: Mapped[List['Category']] = relationship(
         'Category',

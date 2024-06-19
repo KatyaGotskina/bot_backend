@@ -12,6 +12,7 @@ class TaskModel(Id):
 
     start: datetime
     end: Union[datetime, None]
+    timezone_offset: int
     name: str
     categories: list[str]
 
