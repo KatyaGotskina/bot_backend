@@ -41,6 +41,14 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
+  redis:
+    container_name: bot-redis
+    image: redis:6.2.4
+    ports:
+      - "6379:6379"
+    networks:
+      - time_management_network
+
   prometheus:
     image: prom/prometheus
     container_name: prometheus
