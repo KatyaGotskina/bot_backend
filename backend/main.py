@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, APIRouter
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -20,10 +20,13 @@ def setup_middleware(app: FastAPI) -> None:
 
 
 def setup_routers(app: FastAPI) -> None:
-    app.include_router(task_router)
-    app.include_router(category_router)
-    app.include_router(user_router)
-    app.add_route('/metrics', metrics)
+    router = APIRouter(prefix='/katya')
+    router.include_router(task_router)
+    router.include_router(category_router)
+    router.include_router(user_router)
+    router.add_route('/metrics', metrics)
+    app.include_router(router)
+
 
 
 def create_app() -> FastAPI:
