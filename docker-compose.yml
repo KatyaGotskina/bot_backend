@@ -9,6 +9,8 @@ services:
     ports:
       - "81:80"
       - "443:443"
+    volumes:
+      - /etc/ssl/sdfv.ru:/etc/ssl/sdfv.ru
     depends_on:
       - web
     networks:
