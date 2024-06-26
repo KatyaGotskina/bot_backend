@@ -1,6 +1,19 @@
 version: '3.9'
 
 services:
+
+  nginx:
+    build:
+      dockerfile: nginx/Dockerfile
+      context: .
+    ports:
+      - "81:80"
+      - "443:443"
+    depends_on:
+      - web
+    networks:
+      - time_management_network
+
   web:
     container_name: web
     build:
