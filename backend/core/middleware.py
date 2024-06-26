@@ -14,6 +14,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
         print()
         print()
         print(auth_key)
+        print(isinstance(auth_key, str), auth_key != f"Bearer {settings.AUTH_KEY}", str(request.url).split('/')[-1] not in ['openapi.json ', 'swagger', 'metrics'])
         if isinstance(auth_key, str) and auth_key != f"Bearer {settings.AUTH_KEY}" and str(request.url).split('/')[-1] not in ['openapi.json ', 'swagger', 'metrics']:
             return JSONResponse(content={'err': "No auth header"}, status_code=status.HTTP_401_UNAUTHORIZED)
         response = await call_next(request)
